@@ -49,7 +49,7 @@ const studentType = new GraphQLObjectType({
                 type: GraphQLString
             },
             courses:{
-                type: new GraphQLList(courseSchema)
+                type: GraphQLList(courseSchema)
             }
 
         }
