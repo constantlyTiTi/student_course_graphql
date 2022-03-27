@@ -12,31 +12,7 @@ var StudentModel = require('../models/student')
 var studentSchema = require('./studentSchema')
 const jwt = require("jsonwebtoken");
 
-const courseType = new GraphQLObjectType({
-    name: 'course',
-    fields: function () {
-        return {
-            _id: {
-                type: GraphQLString
-            },
-            course_code: {
-                type: GraphQLString
-            },
-            course_name: {
-                type: GraphQLString
-            },
-            section: {
-                type: GraphQLString
-            },
-            semester: {
-                type: GraphQLString
-            },
-            students:{
-                type: GraphQLList(studentSchema)
-            }
-        }
-    }
-});
+const courseType = require('./courseType')
 
 const queryType = new GraphQLObjectType({
 

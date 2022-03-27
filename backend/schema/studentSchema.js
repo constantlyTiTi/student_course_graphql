@@ -14,47 +14,7 @@ const { GraphQLInputObjectType } = require('graphql');
 const student = require('../models/student');
 const courseSchema = require('./courseSchema')
 
-const studentType = new GraphQLObjectType({
-    name: 'student',
-    fields: function () {
-        return {
-            _id: {
-                type: GraphQLString
-            },
-            first_name: {
-                type: GraphQLString
-            },
-            last_name: {
-                type: GraphQLString
-            },
-            student_number: {
-                type: GraphQLString
-            },
-            address: {
-                type: GraphQLString
-            },
-            city: {
-                type: GraphQLString
-            },
-            phone_number: {
-                type: GraphQLString
-            },
-            email: {
-                type: GraphQLString
-            },
-            password: {
-                type: GraphQLString
-            },
-            program: {
-                type: GraphQLString
-            },
-            courses:{
-                type: GraphQLList(courseSchema)
-            }
-
-        }
-    }
-});
+const studentType = require('./studentType')
 
 const queryType = new GraphQLObjectType({
     name: 'Query',

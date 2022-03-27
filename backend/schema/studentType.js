@@ -7,8 +7,9 @@ var GraphQLID = require('graphql').GraphQLID;
 var GraphQLString = require('graphql').GraphQLString;
 var GraphQLInt = require('graphql').GraphQLInt;
 var GraphQLDate = require('graphql-date');
+const courseType = require('./courseType')
 
-export const studentType = new GraphQLObjectType({
+const studentType = new GraphQLObjectType({
     name: 'student',
     fields: function () {
         return {
@@ -42,32 +43,11 @@ export const studentType = new GraphQLObjectType({
             program: {
                 type: GraphQLString
             },
-            courses: [courseType]
+            courses: {
+                type: GraphQLList(courseType)
+            }
 
         }
     }
 });
-
-export const courseType = new GraphQLObjectType({
-    name: 'course',
-    fields: function () {
-        return {
-            _id: {
-                type: GraphQLString
-            },
-            course_code: {
-                type: GraphQLString
-            },
-            course_name: {
-                type: GraphQLString
-            },
-            section: {
-                type: GraphQLString
-            },
-            semester: {
-                type: GraphQLString
-            },
-            students: [studentType]
-        }
-    }
-});
+module.exports = studentType
