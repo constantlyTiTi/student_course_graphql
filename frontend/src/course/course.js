@@ -4,6 +4,29 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { getCoursesByCode, addCourseToStudent, addStudentToCourse, deleteCourse, getCourseStudentList } from "../redux/course-redux";
 
+const GET_COURSE = gql`
+{
+  getCourse {
+    _id
+    course_code
+    course_name
+    section
+    semester
+    students {
+      _id
+      first_name
+      last_name
+      student_number
+      address
+      city
+      phone_number
+      email
+      password
+      program
+    }
+  }
+}
+`;
 const Course = (props) => {
   const selectedCourses = useSelector((state) => state.course.selectedCourses)
   const { user, token } = useSelector((state) => state.user);
@@ -14,6 +37,7 @@ const Course = (props) => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { loading, error, data , refetch } = useQuery(GET_COURSE);
   const { course_code } = useParams();
   useEffect(() => {
     const getCourse = async (course_code) => {

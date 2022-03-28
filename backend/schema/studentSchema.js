@@ -1,20 +1,15 @@
-var GraphQLSchema = require('graphql').GraphQLSchema;
-var GraphQLObjectType = require('graphql').GraphQLObjectType;
-var GraphQLList = require('graphql').GraphQLList;
-var GraphQLObjectType = require('graphql').GraphQLObjectType;
-var GraphQLNonNull = require('graphql').GraphQLNonNull;
-var GraphQLID = require('graphql').GraphQLID;
-var GraphQLString = require('graphql').GraphQLString;
-var GraphQLInt = require('graphql').GraphQLInt;
-var GraphQLDate = require('graphql-date');
-var CourseModel = require('../models/course');
+const { GraphQLObjectType, GraphQLString, GraphQLList, GraphQLSchema, GraphQLNonNull, GraphQLInt } = require('graphql');
+
 var StudentModel = require('../models/student')
+var CourseModel = require('../models/course');
 const jwt = require("jsonwebtoken");
 const { GraphQLInputObjectType } = require('graphql');
 const student = require('../models/student');
-const courseSchema = require('./courseSchema')
+const bcrypt = require("bcryptjs")
 
 const studentType = require('./studentType')
+const authType = require('./authType')
+
 
 const queryType = new GraphQLObjectType({
     name: 'Query',
@@ -28,16 +23,16 @@ const queryType = new GraphQLObjectType({
                         type: GraphQLString
                     }
                 },
-                resolve: function (root, params) {
-                    try {
-                        var token = req.headers.authorization.split(' ')[1];
-                        jwt.verify(token, process.env.JWT_SECRET)
-                    } catch (e) {
-                        if (e instanceof jwt.JsonWebTokenError) {
-                            return res.status(401).end()
-                        }
-                        return res.status(400).end()
-                    }
+                resolve(root, params) {
+                    // try {
+                    //     var token = req.headers.authorization.split(' ')[1];
+                    //     jwt.verify(token, process.env.JWT_SECRET)
+                    // } catch (e) {
+                    //     if (e instanceof jwt.JsonWebTokenError) {
+                    //         return res.status(401).end()
+                    //     }
+                    //     return res.status(400).end()
+                    // }
                     const studentInfo = StudentModel.findById(params.student_id).exec()
                     if (!studentInfo) {
                         throw new Error('Error')
@@ -53,71 +48,59 @@ const queryType = new GraphQLObjectType({
                         type: GraphQLString
                     }
                 },
-                resolve: function (root, params) {
-
-                    try {
-                        let students = StudentModel.find().exec()
-                        console.log(students, req.params.course_id)
-                        let filteredStudents = students.filter(s => s.courses.includes(req.params.course_id))
-                        return res.status(200).send(filteredStudents)
-                    }
-                    catch (e) {
-                        return res.status(400).send(e)
-                    }
+                resolve: async (root, params) => {
+                    let course = await CourseModel.findById(params.course_id).exec()
+                    return course.students
                 }
             },
             login: {
-                type: studentType,
-                args:{
-                    student_number:{
-                        name:'student_number',
+                type: authType,
+                args: {
+                    student_number: {
+                        name: 'student_number',
                         type: GraphQLString
                     },
                     password: {
-                        name:'password',
+                        name: 'password',
                         type: GraphQLString
                     }
                 },
-                resolve: function(root, params) {
+                resolve: async (root, params) => {
                     if (!params.student_number) {
-                        return res.status(400).json({
-                            success: false,
-                            error: 'please provide the username'
-                        })
+                        return new Error('please provide the username')
                     }
                     if (!params.password) {
-                        return res.status(400).json({
-                            success: false,
-                            error: 'please provide the password'
-                        })
+                        return new Error('please provide the password')
                     }
-    
-                    let studentExist = StudentModel.findOne({ student_number: params.student_number })
-                    if(!studentExist){
-                        return res.status(500).json({ success: false, error: 'not exist' }) 
+
+                    const studentExist = await StudentModel.findOne({ student_number: params.student_number }).exec()
+                    if (!studentExist) {
+                        return new Error('not exist')
                     }
-                    const isMatch = bcrypt.compare(params.password, studentExist.password)
-                
-                        if (!isMatch) {
-                            return res
-                                .status(400)
-                                .json({ errors: [{ msg: "Invalid credentials" }] })
-                        }
+                    const isMatch = await bcrypt.compare(params.password, studentExist.password)
+                    // if (!isMatch) {
+                    //     return new Error('Invalid credentials')
+                    // }
+                    try {
                         const payload = {
                             student_number: student.student_number
-                
                         }
-                
-                        try {
-                            token =  jwt.sign(payload, process.env.JWT_SECRET, {
-                                expiresIn: 360000
-                            })
-                    
-                            return res.json({ student: studentExist, token })
-                        } catch (e) {
-                            console.log(e)
-                            return res.status(500).json({ msg: "Token not generated" })
-                        }
+                        const token = await jwt.sign(payload, process.env.JWT_SECRET, {
+                            expiresIn: 360000
+                        })
+                        console.log({ student: studentExist, token })
+
+                        return { student: studentExist, token, success: true, message: 'login successfully', }
+                    } catch (e) {
+                        console.log(e)
+                        return new Error('Token not generated')
+                    }
+                    // .then(studentExist => {
+                    //     // return i
+                    //     console.log("isMatch", isMatch)
+                    // }).catch(
+                    //     e => { return null }
+                    // )
                 }
             }
         }
@@ -133,42 +116,41 @@ const mutation = new GraphQLInputObjectType({
                 type: studentType,
                 args: {
                     student_id: {
-                        name: 'id',
-                        type: new GraphQLNonNull(GraphQLString)
+                        name: '_id',
+                        type: GraphQLNonNull(GraphQLString)
                     },
                     course_id: {
                         name: 'id',
-                        type: new GraphQLNonNull(GraphQLString)
+                        type: GraphQLNonNull(GraphQLString)
                     }
                 },
-                resolve: function (root, params) {
-                    try {
-                        var token = req.headers.authorization.split(' ')[1];
-                        jwt.verify(token, process.env.JWT_SECRET)
-                    } catch (e) {
-                        if (e instanceof jwt.JsonWebTokenError) {
-                            return res.status(401).end()
-                        }
-                        return res.status(400).json({ error: e.message })
-                    }
+                resolve(root, params) {
+                    // try {
+                    //     var token = req.headers.authorization.split(' ')[1];
+                    //     jwt.verify(token, process.env.JWT_SECRET)
+                    // } catch (e) {
+                    //     if (e instanceof jwt.JsonWebTokenError) {
+                    //         return res.status(401).end()
+                    //     }
+                    //     return res.status(400).json({ error: e.message })
+                    // }
 
-                    let student = StudentModel.findOne({ _id: req.params.student_id })
+                    let student = StudentModel.findOne({ _id: params.student_id })
 
                     if (student.courses.includes(req.params.course_id)) {
-                        return res.status(400).json({
-                            message: 'Course already exist',
-                        })
+                        return new Error('Course already exist')
                     }
 
-                    student.courses.push(req.params.course_id)
+                    student.courses.push(params.course_id)
 
-                     student.save()
-                        .then((item) => {
-                            res.status(200).send(item)
-                        })
-                        .catch((error) => {
-                            res.status(400).send(error)
-                        })
+                    try {
+                        student.save()
+                    }
+                    catch {
+                        return new Error('student cannot be saved')
+                    }
+
+                    return student
                 }
             },
             signUp: {
@@ -215,7 +197,7 @@ const mutation = new GraphQLInputObjectType({
                     let studentExist = StudentModel.findOne({ student_number: student.student_number })
 
                     if (studentExist) {
-                        return res.status(500).json({ success: false, error: 'already exist' })
+                        return new Error('already exist')
                     }
 
                     const studentModel = new StudentModel(params);
@@ -228,20 +210,20 @@ const mutation = new GraphQLInputObjectType({
                         token = jwt.sign(payload, process.env.JWT_SECRET, {
                             expiresIn: 360000
                         })
-                
-                        return res.status(201).json({
+
+                        return {
                             success: true,
-                            student: result,
+                            student: newStudent,
                             message: 'sign up successfully',
                             token: token
-                        })
+                        }
                     } catch (e) {
                         console.log(e)
-                        return res.status(500).json({ error: "Token not generated" })
+                        return new Error('Token not generated')
                     }
                 }
             }
         }
     }
 })
-module.exports = new GraphQLSchema({ query: queryType, mutation: mutation });
+module.exports = new GraphQLSchema({ query: queryType });

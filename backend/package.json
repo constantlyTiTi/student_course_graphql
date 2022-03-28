@@ -1,12 +1,18 @@
 {
   "dependencies": {
+    "apollo-server-express": "^3.6.6",
     "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
     "dotenv": "^16.0.0",
+    "ejs": "^3.1.5",
     "express": "^4.17.2",
     "express-graphql": "^0.12.0",
+    "express-session": "^1.17.2",
     "graphql": "^15.8.0",
     "graphql-date": "^1.0.3",
     "jsonwebtoken": "^8.5.1",
+    "method-override": "^3.0.0",
     "mongoose": "^6.2.3",
     "passport-jwt": "^4.0.0"
   },
@@ -14,6 +20,8 @@
     "nodemon": "^2.0.15"
   },
   "scripts": {
-    "devStart": "nodemon server.js"
+		"start": "node server",
+		"start:die": "node die",
+    "dev": "nodemon server"
   }
 }

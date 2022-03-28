@@ -1,4 +1,4 @@
-export const resolvers = {
+const resolvers = {
     Query:{
         hello:()=>"hi"
     },
@@ -6,3 +6,5 @@ export const resolvers = {
         createStudent
     }
 }
+
+module.exports = resolvers

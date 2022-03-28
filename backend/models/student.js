@@ -12,9 +12,10 @@ const Student = new Schema(
         email: { type: String, required: true },
         password: { type: String, required: true },
         program: { type: String, required: true },
-        courses: [{type: mongoose.Schema.Types.ObjectId, ref:"course"}]
+        // courses: [{type: mongoose.Schema.Types.ObjectId, ref:"course"}]
     },
     { timestamps: true },
 )
+
 
 module.exports = mongoose.model('student', Student)
