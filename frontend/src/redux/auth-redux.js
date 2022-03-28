@@ -47,6 +47,9 @@ const userSlice = createSlice({
 	reducers: {
 		setUserInfo: (state, action) => {
 			state.user = action.payload
+		},
+		setToken: (state, action) => {
+			state.token = action.payload
 		}
 	},
 	extraReducers: (builder) => (
@@ -86,5 +89,5 @@ const userSlice = createSlice({
 })
 
 
-export const { setUserInfo } = userSlice.actions
+export const { setUserInfo,setToken } = userSlice.actions
 export const userReducer = userSlice.reducer

@@ -157,7 +157,7 @@ const courseSlice = createSlice({
 	initialState,
 	reducers: {
 		setCourseInfo: (state, action) => {
-			state.course = action.payload
+			state[action.payload.name] = action.payload.value
 		}
 	},
 	extraReducers: (builder) => (

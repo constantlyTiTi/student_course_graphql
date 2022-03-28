@@ -130,6 +130,18 @@ const query = new GraphQLObjectType({
                     return new Error('Token not generated')
                 }
             }
+        },
+        getCoursesByStudent:{
+            type: new GraphQLList(courseType),
+            args: {
+                student_id: {
+                    type: GraphQLString
+                }
+            },
+            resolve:  async (root, params) => {
+                const results = await CourseModel.find({ "students._id": params.student_id })
+                return results
+            }
         }
     })
 })
