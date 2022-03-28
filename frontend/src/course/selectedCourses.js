@@ -60,6 +60,7 @@ const SelectedCourses = () => {
 
   const dropCourse = async (courseId) => {
     await deleteCourse({ variables: { "course_id": courseId, "student_id": user._id } })
+    navigate("/selectedcourses")
   }
 
   if (!data?.getCoursesByStudent || loading) {

@@ -142,6 +142,16 @@ const query = new GraphQLObjectType({
                 const results = await CourseModel.find({ "students._id": params.student_id })
                 return results
             }
+        },
+        getAllStudents:{
+            type: new GraphQLList(studentType),
+            resolve: async (root, params) => {
+                const Students = await StudentModel.find().exec()
+                if (!Students) {
+                    throw new Error('Error')
+                }
+                return Students
+            }
         }
     })
 })

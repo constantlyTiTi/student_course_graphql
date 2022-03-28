@@ -2,15 +2,34 @@ import React, { useEffect, useState } from 'react'
 import { Table, Button, FloatingLabel, Spinner } from "react-bootstrap"
 import { useDispatch, useSelector } from "react-redux";
 import {listAllStudentsRedux} from '../redux/student-redux'
+import {gql, useQuery} from "@apollo/client";
 
+const GET_STUDENTS = gql`
+{
+  getAllStudents {
+    _id
+    first_name
+    last_name
+    student_number
+    address
+    city
+    phone_number
+    email
+    password
+    program
+  }
+}
+`;
 const ListAllstudent=()=>{
   const dispatch = useDispatch()
-const {students} = useSelector((state) => state.student)
-const loading = useSelector((state) => state.student.loading)
-useEffect(()=>{
-  dispatch(listAllStudentsRedux())
-  console.log(students)
-},[])
+// const {students} = useSelector((state) => state.student)
+// const loading = useSelector((state) => state.student.loading)
+const { loading, error, data , refetch } = useQuery(GET_STUDENTS);
+const students = data?.getAllStudents
+// useEffect(()=>{
+//   dispatch(listAllStudentsRedux())
+//   console.log(students)
+// },[])
 
 
 if(!students || loading){
